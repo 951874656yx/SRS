@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.cumt.SRS.dao.ScheduleDao">
+    <resultMap id="scheduleMap" type="com.github.cumt.SRS.domain.ScheduleOfClasses">
+        <result property="courseid" column="courseId"/>
+        <result property="sectionid" column="sectionId"/>
+        <result property="semester" column="semester"/>
+    </resultMap>
+    <resultMap id="sectionMap" type="com.github.cumt.SRS.domain.Section">
+        <!--Course表  -->
+        <result property="representedCourse.courseId" column="courseid"/>
+        <result property="representedCourse.courseName" column="coursename"/>
+        <result property="representedCourse.credits" column="credits"/>
+       	<!--Teacher表  -->
+        <result property="instructor.id" column="teacherid"/>
+        <result property="instructor.name" column="name"/>
+        <result property="instructor.title" column="title"/>
+        <result property="instructor.department" column="department"/>
+       
+        <!--Section表  -->
+        <result property="sectionId" column="sectionid"/>
+        <result property="dayOfWeek" column="dayofweek"/>
+        <result property="timeOfDay" column="timeofday"/>
+        <result property="room" column="room"/>
+        <result property="seatingCapacity" column="seatingcapacity"/>
+    </resultMap>
+    
+    <select id="findScheduleBySemester" resultMap="sectionMap">
+        SELECT * FROM section as s 
+        	inner join 
+      			course as c 
+      		inner join
+      			(SELECT * FROM scheduleofclasses WHERE semester = #{semester}) as soc
+      				on s.courseid=c.courseid and s.teacherid=#{teacher.id} and s.sectionid = soc.sectionid and c.courseid=soc.courseid
+      		left join 
+      			teacher as t on s.teacherid=t.id 
+    </select>
+    
+     <select id="findScheduleForStudent" resultMap="sectionMap">
+        SELECT * FROM section as s 
+        	inner join course as c
+      			ON s.courseid=c.courseid  
+      		inner join transcriptentry as te
+      			ON s.courseid=te.courseid AND s.sectionid=te.sectionid AND te.semester=#{search} AND te.studentid=#{student.id}
+      		left join teacher as th
+      			on th.id=s.teacherid
+    </select>
+    
+    <insert id="addSchedule" >
+        INSERT INTO scheduleofclasses(courseid,sectionid,semester)
+        	VALUES(#{section.representedCourse.courseId},#{section.sectionId},#{semester})
+    </insert>
+</mapper>

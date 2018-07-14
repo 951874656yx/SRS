@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.lpfcumt.SRS.dao.SectionDao">
+    <!-- 定义返回类型 -->
+    <resultMap id="sectionMap" type="com.github.lpfcumt.SRS.domain.Section">
+        <!--Course表  -->
+        <result property="representedCourse.courseId" column="courseid"/>
+        <result property="representedCourse.courseName" column="coursename"/>
+        <result property="representedCourse.credits" column="credits"/>
+       	<!--Teacher表  -->
+        <result property="instructor.id" column="teacherid"/>
+        <result property="instructor.name" column="name"/>
+        <result property="instructor.title" column="title"/>
+        <result property="instructor.department" column="department"/>
+       
+        <!--Section表  -->
+        <result property="sectionId" column="sectionid"/>
+        <result property="dayOfWeek" column="dayofweek"/>
+        <result property="timeOfDay" column="timeofday"/>
+        <result property="room" column="room"/>
+        <result property="seatingCapacity" column="seatingcapacity"/>
+        
+        <!--Student表  -->
+        <result property="studentId" column="studentid"/>
+        
+    </resultMap>
+    
+    <!--查询所有班次  -->
+    <select id="findAll" resultMap="sectionMap">
+        select * from section
+    </select>
+    
+    <!--根据 courseId 查询班次  -->
+    <select id="findSectionByCourseId"  resultMap="sectionMap">
+      	SELECT * FROM section as s inner join 
+      	(select * from Course where courseid=#{courseId}) as c 
+      		on s.courseid=c.courseid 
+      	left join teacher as t on s.teacherid=t.id
+      	
+    </select>
+    
+     <!--根据 courseId 查询班次  -->
+    <select id="findSectionByCourseId_SectionId"  resultMap="sectionMap">
+      	SELECT * FROM section as s inner join 
+      	(select * from Course where courseid=#{courseId} ) as c 
+      		on s.courseid=c.courseid and s.sectionid=#{sectionId}
+      	left join teacher as t on s.teacherid=t.id 
+      	
+    </select>
+    
+    <!--根据 teacherId 查询班次  -->
+    <select id="findSectionBy_TreacherId" resultMap="sectionMap">
+        SELECT * FROM section as s 
+        	inner join 
+      			course as c 
+      		inner join teacher as t 
+      			on s.courseid=c.courseid and s.teacherid=t.id and t.id=#{teacherId}
+    </select>
+    
+    <!--查询学生选课班次  -->
+    <select id="findSectionforStudent" resultMap="sectionMap">
+        SELECT * FROM section AS s
+        	INNER JOIN scheduleofclasses AS sd
+        		ON s.courseid=sd.courseid AND s.sectionid=sd.sectionid 
+        		AND sd.courseid=#{courseId} AND sd.semester=#{semester}
+        	LEFT JOIN teacher AS t 
+        		ON t.id = s.teacherid 
+        	LEFT JOIN transcriptentry AS te
+        		ON s.courseid=te.courseid AND s.sectionid=te.sectionid
+    </select>
+    
+    <!--查询学生所有课程  -->
+    <select id="findSectionByStudent" resultMap="sectionMap">
+        SELECT * FROM section AS s
+        	INNER JOIN transcriptentry te
+        		ON s.courseid=te.courseid AND s.sectionid=te.sectionid AND te.studentid=#{student.id}
+    </select>
+    
+    <!--添加班次  -->
+    <insert id="addSection" parameterType="com.github.lpfcumt.SRS.domain.Section">
+        INSERT INTO section(sectionid,courseid,teacherid,dayofweek,timeofday,room,seatingcapacity) 
+        	VALUES(#{sectionId},#{representedCourse.courseId},#{instructor.id},#{dayOfWeek},
+        	#{timeOfDay},#{room},#{seatingCapacity})
+    </insert>
+    
+    <!--学生选课  -->
+    <insert id="selectSection">
+        INSERT INTO transcriptentry(studentid,sectionid,courseid,semester) 
+        	VALUES(#{student.id},#{sectionId},#{courseId},#{semester})
+    </insert>
+    
+    <!--指派授课教师  -->
+    <update id="appointInstructor" >
+        UPDATE section SET teacherid=#{teacher.id} WHERE sectionid=#{sectionId} and courseid=#{courseId}
+    </update>
+    
+    <!--更新课程信息  -->
+    <update id="updateSection" parameterType="com.github.lpfcumt.SRS.domain.Section">
+        UPDATE section SET dayofweek=#{dayOfWeek},timeofday=#{timeOfDay},room=#{room},seatingcapacity=#{seatingCapacity} 
+        WHERE sectionid=#{sectionId} and courseid=#{representedCourse.courseId}
+    </update>
+    
+    <!--退选课程  -->
+    <delete id="cancelSection">
+        DELETE FROM transcriptentry WHERE studentid=#{student.id} AND courseid=#{courseId} 
+        	AND sectionid=#{sectionId} AND semester=#{semester} 
+    </delete>
+    
+</mapper>

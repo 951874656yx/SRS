@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.lpfcumt.SRS.dao.TranscriptDao">
+    <!-- 返回类型 -->
+    <resultMap id="transcriptMap" type="com.github.lpfcumt.SRS.domain.TranscriptEntry">
+        <result property="grade" column="grade"/>
+       
+     	<!--Section表  -->
+     	<result property="section.sectionId" column="sectionid"/>
+        <result property="section.dayOfWeek" column="dayofweek"/>
+        <result property="section.timeOfDay" column="timeofday"/>
+        <result property="section.room" column="room"/>
+        <result property="section.seatingCapacity" column="seatingcapacity"/>
+        <result property="section.representedCourse.courseId" column="courseId"/>
+        <result property="section.representedCourse.courseName" column="courseName"/>
+        <result property="section.representedCourse.credits" column="credits"/>
+        <result property="section.instructor.id" column="id"/>
+        <result property="section.instructor.name" column="name"/>
+    </resultMap>
+    
+   <!-- 查询 成绩-->
+   <select id="findTranscriptForStudent" resultMap="transcriptMap" >
+       SELECT * FROM transcriptentry AS te 
+       	 INNER JOIN section AS s
+      		 ON te.studentid=#{student.id} AND s.sectionid=te.sectionid AND s.courseid=te.courseid
+         INNER JOIN course AS c
+       		 ON te.courseid=c.courseid
+         LEFT JOIN teacher AS t
+      		 ON t.id=s.teacherid 
+   </select>
+   
+</mapper>

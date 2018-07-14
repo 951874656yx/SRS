@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.lpfcumt.SRS.dao.CourseDao">
+    <!-- 定义返回类型 -->
+    <resultMap id="courseMap" type="com.github.lpfcumt.SRS.domain.Course">
+        <result property="courseId" column="courseid"/>
+        <result property="courseName" column="coursename"/>
+        <result property="credits" column="credits"/>
+    </resultMap>
+    
+    <!--查询所有课程  -->
+    <select id="findAll" resultMap="courseMap">
+        select * from course ORDER BY courseid asc
+    </select>
+    
+    <!--查询总课程数  -->
+    <select id="countAllCourse" resultType="Integer">
+        SELECT count(*) FROM course
+    </select>
+    
+    <!--模糊查询课程  -->
+    <select id="fuzzyfindCourse" resultMap="courseMap"> 
+		SELECT * FROM course WHERE 
+		credits LIKE #{search} OR courseId LIKE #{search} OR coursename LIKE #{search}
+    </select>
+    
+    <!--查询学生选课课程  -->
+    <select id="listCourseForStudent" resultMap="courseMap">
+        SELECT distinct c.courseid,c.coursename,c.credits  FROM course AS c
+        	INNER JOIN scheduleofclasses AS so
+        		ON c.courseid=so.courseid AND so.semester=#{semester}
+    </select>
+    <select id="countCourseForStudent" resultType="Integer">
+        SELECT  count(distinct c.courseid)  FROM course AS c
+        	INNER JOIN scheduleofclasses AS so
+        		ON c.courseid=so.courseid AND so.semester=#{semester}
+    </select>
+    
+    <!--查询前置课程  -->
+    <select id="findPreCourse" resultMap="courseMap">
+        SELECT * FROM course AS c
+        	INNER JOIN precourse AS pc
+        	ON c.courseid=pc.precourseid AND pc.courseid=#{courseId}
+    </select>
+    
+    <!--添加课程  -->
+    <insert id="addCourse" parameterType="com.github.lpfcumt.SRS.domain.Course">
+        INSERT INTO course(courseid,courseName,credits) VALUES(#{courseId},#{courseName},#{credits})
+    </insert>
+    
+    <insert id="addPreCourse" >
+        INSERT INTO precourse(courseid,precourseId) VALUES(#{courseId},#{precourseId})
+    </insert>
+    
+    <!--修改课程  -->
+    <update id="updateCourse" parameterType="com.github.lpfcumt.SRS.domain.Course">
+        UPDATE course SET coursename=#{courseName},credits=#{credits} WHERE courseid=#{courseId}
+    </update>
+</mapper>
