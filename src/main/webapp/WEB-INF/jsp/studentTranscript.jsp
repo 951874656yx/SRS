@@ -133,10 +133,12 @@ window.operateEvents = {
 </script>
 </head>
 <body>
+
 	<div id="toolbar" class="btn-group">	
 	</div>
 	<div class="container-fluid">
 		<table id="table"></table>
 	</div>
+	<div  class="text-right"><button type="button" class="btn btn-primary" >打印<button></div>
 </body>
 </html>
